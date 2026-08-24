@@ -1,0 +1,173 @@
+file: budget_at_a_glance.xlsx
+table: budget_at_a_glance
+entity: entity
+period: period
+measure: value
+sheets:
+- name: BAAG
+  layout: crosstab
+  id_columns: []
+  measure_columns: []
+  header_row: 5
+  header_rows:
+  - 4
+  - 5
+  label_column: E
+  alt_label_columns:
+  - D
+  first_data_row: 6
+  last_data_row: 30
+  first_value_column: F
+  last_value_column: I
+  note_rows:
+  - 2
+  - 3
+  - 32
+  - 33
+  row_kinds:
+    grand_total: ^(8\.\ Total\ Receipts\ \(1\+4\)|9\.\ Total\ Expenditure\ \(10\+13\))$
+  constants: {}
+- name: Deficit Statistics
+  layout: crosstab
+  id_columns: []
+  measure_columns: []
+  header_row: 5
+  header_rows:
+  - 4
+  - 5
+  label_column: C
+  alt_label_columns:
+  - B
+  first_data_row: 6
+  last_data_row: 30
+  first_value_column: D
+  last_value_column: G
+  note_rows:
+  - 2
+  - 3
+  - 32
+  - 33
+  row_kinds:
+    grand_total: ^(Grand\ Total\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \
+      \ \ \ \ \ \(Fiscal\ Deficit\))$
+  constants: {}
+- name: Receipts
+  layout: crosstab
+  id_columns: []
+  measure_columns: []
+  header_row: 4
+  header_rows: []
+  label_column: C
+  alt_label_columns:
+  - B
+  first_data_row: 5
+  last_data_row: 33
+  first_value_column: D
+  last_value_column: G
+  note_rows:
+  - 2
+  - 3
+  - 34
+  - 35
+  row_kinds:
+    grand_total: ^(Total\ Capital\ Receipts\ \(A\+B\)|Total\ Receipts\ \(1a\+2\+3\+4\)|Total\-\
+      Revenue\ Receipts\ \(1a\ \+\ 2\))$
+  constants: {}
+- name: Expenditure of GOI
+  layout: crosstab
+  id_columns: []
+  measure_columns: []
+  header_row: 5
+  header_rows:
+  - 4
+  - 5
+  label_column: C
+  alt_label_columns:
+  - B
+  first_data_row: 6
+  last_data_row: 54
+  first_value_column: D
+  last_value_column: G
+  note_rows:
+  - 2
+  - 3
+  - 55
+  - 56
+  row_kinds:
+    subtotal: ^Grand\ Total$
+    grand_total: ^(Total)$
+  constants: {}
+- name: Transfer of Resources
+  layout: crosstab
+  id_columns: []
+  measure_columns: []
+  header_row: 4
+  header_rows:
+  - 3
+  - 4
+  label_column: E
+  alt_label_columns:
+  - D
+  first_data_row: 5
+  last_data_row: 34
+  first_value_column: F
+  last_value_column: H
+  note_rows:
+  - 2
+  - 3
+  - 35
+  - 36
+  row_kinds:
+    grand_total: ^(IV\.\ \ Total\ Transfer\ to\ States\ \[Other\ than\ \(I\)\+\(II\)\+\(III\)\]|Total\
+      Transfer\ to\ States/UTs|V\.\ \ Total\ Transfer\ to\ Delhi\ and\ Puducherry)$
+  constants: {}
+annotations: {}
+absent_concepts: []
+defaults: {}
+confidence:
+  BAAG.value_columns: high
+  BAAG.data_rows: high
+  BAAG.header_row: high
+  BAAG.label_column: high
+  BAAG.layout: low
+  Deficit Statistics.value_columns: high
+  Deficit Statistics.data_rows: high
+  Deficit Statistics.header_row: high
+  Deficit Statistics.label_column: high
+  Deficit Statistics.layout: low
+  Receipts.value_columns: high
+  Receipts.data_rows: high
+  Receipts.header_row: high
+  Receipts.label_column: high
+  Receipts.layout: low
+  Expenditure of GOI.value_columns: high
+  Expenditure of GOI.data_rows: high
+  Expenditure of GOI.header_row: high
+  Expenditure of GOI.label_column: high
+  Expenditure of GOI.layout: low
+  Transfer of Resources.value_columns: high
+  Transfer of Resources.data_rows: high
+  Transfer of Resources.header_row: high
+  Transfer of Resources.label_column: high
+  Transfer of Resources.layout: low
+notes_for_reviewer:
+- 'BAAG: using column E for names; D also holds text (numbering, or the same name
+  in another language)'
+- 'BAAG: read as a crosstab — value headers are merged/multi-line — cannot tell periods
+  from names; defaulting to unpivot, flag for confirmation'
+- 'Deficit Statistics: using column C for names; B also holds text (numbering, or
+  the same name in another language)'
+- 'Deficit Statistics: read as a crosstab — value headers are merged/multi-line —
+  cannot tell periods from names; defaulting to unpivot, flag for confirmation'
+- 'Receipts: using column C for names; B also holds text (numbering, or the same name
+  in another language)'
+- 'Receipts: read as a crosstab — value headers are merged/multi-line — cannot tell
+  periods from names; defaulting to unpivot, flag for confirmation'
+- 'Expenditure of GOI: using column C for names; B also holds text (numbering, or
+  the same name in another language)'
+- 'Expenditure of GOI: read as a crosstab — value headers are merged/multi-line —
+  cannot tell periods from names; defaulting to unpivot, flag for confirmation'
+- 'Transfer of Resources: using column E for names; D also holds text (numbering,
+  or the same name in another language)'
+- 'Transfer of Resources: read as a crosstab — value headers are merged/multi-line
+  — cannot tell periods from names; defaulting to unpivot, flag for confirmation'

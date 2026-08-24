@@ -1,0 +1,47 @@
+file: BananaPatterns-Climbing-2026-08-18.xlsx
+table: bananapatterns_climbing_2026_08_18
+entity: Name
+period: period
+measure: '% vs pivot (now)'
+sheets:
+- name: Climbing
+  layout: record
+  id_columns:
+  - A
+  - B
+  - C
+  - D
+  - E
+  measure_columns:
+  - F
+  - G
+  - H
+  header_row: 1
+  header_rows: []
+  label_column: E
+  alt_label_columns:
+  - A
+  - B
+  - C
+  - D
+  first_data_row: 2
+  last_data_row: 30
+  first_value_column: F
+  last_value_column: H
+  note_rows: []
+  row_kinds: {}
+  constants: {}
+annotations: {}
+absent_concepts: []
+defaults: {}
+confidence:
+  Climbing.value_columns: high
+  Climbing.data_rows: high
+  Climbing.header_row: high
+  Climbing.label_column: high
+  Climbing.layout: high
+notes_for_reviewer:
+- 'Climbing: using column E for names; A, B, C, D also holds text (numbering, or the
+  same name in another language)'
+- 'Climbing: read as a record — value header(s) are names, not periods; 5 identifier
+  column(s) to the left'

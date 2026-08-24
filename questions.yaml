@@ -1,0 +1,63 @@
+# The demo set, doubling as the end-to-end regression suite.
+# status: answered | abstained | clarify.  Fields not listed are not checked.
+
+- q: "What was Gujarat's diesel consumption in 2019-20?"
+  status: answered
+  cites: ["PT_Cons_Statewise HSD!M42"]
+  values: {v1: 5607.584527746732}
+
+- q: "What was Delhi's total consumption in 2015-16?"
+  status: answered
+  values: {v1: 4996.696729999996}
+
+- q: "Which state consumed the most petrol in 2024-25?"
+  status: answered
+  cites: ["PT_Cons_Statewise MS!R18"]
+  values: {v1: UTTAR PRADESH, v2: 4832.791}
+
+- q: "Which region used the most diesel in 2024-25?"
+  status: answered
+  n_cites: 11                      # 1 region label + 10 state cells
+  values: {v1: NORTH, v2: 27551.842507840047}
+
+- q: "Which region used the least diesel in 2020-21?"
+  status: answered
+  values: {v1: NORTH EAST, v2: 1775.687166864522}   # NOT South-with-Lakshadweep
+
+- q: "How much tax revenue did Maharashtra generate from fuel in 2022-23?"
+  status: abstained                # concept absent — caught before any model runs
+
+- q: "What is the population of Kerala?"
+  status: abstained
+
+- q: "What was Gujarat's petrol consumption in 2030-31?"
+  status: abstained                # year exists, 2030-31 does not
+
+- q: "What share of India's petrol consumption was Bihar in 2024-25?"
+  status: answered
+  values: {v1: 2.9027514811}      # 1161.232 / 40004.527 * 100
+  n_cites: 37                     # 1 numerator cell + 36 denominator cells
+
+- q: "What was Uttar's diesel consumption in 2019-20?"
+  status: clarify                  # UTTAR PRADESH vs UTTARAKHAND
+
+- q: "what share of consumption does Bihar contribute to?"
+  status: clarify        # no year named -> would silently sum 18 years (D48)
+
+- q: "what share of consumption does Bihar contribute to for 2024-25?"
+  status: answered
+  values: {v1: 2.7925}   # 6014.75 / 215387.01 * 100
+  n_cites: 37
+
+- q: "How much % did petrol consumption in Bihar increase in 2025-26 compared to the previous year?"
+  status: answered
+  values: {v1: 8.2326}   # (1256.826 - 1161.232) / 1161.232 * 100
+  n_cites: 2             # one cell per period — a comparison, not a share
+
+- q: "what % change does Maharastra shown in Petrol consumption last year"
+  status: clarify        # typo resolves fine; "last year" has no anchor (D51, D52)
+
+- q: "what % change does Maharastra show in Petrol consumption in 2025-26 compared to previous year"
+  status: answered
+  values: {v1: 6.2913}   # (4645.513 - 4370.547) / 4370.547 * 100 — typo tolerated
+  n_cites: 2

@@ -1,0 +1,18 @@
+# Core pipeline
+duckdb
+openpyxl
+pydantic
+python-dotenv
+PyYAML
+
+# Planners — Ollama for the free local tier, openai for any OpenAI-compatible provider
+ollama
+openai
+
+# API + SQL escape hatch
+fastapi
+uvicorn
+sqlglot
+
+# Demo surface
+python-pptx

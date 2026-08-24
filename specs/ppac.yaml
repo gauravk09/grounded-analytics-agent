@@ -1,0 +1,156 @@
+file: ppac_statewise_sales.xlsx
+table: consumption
+entity: state
+period: year
+measure: value
+unit: thousand metric tonnes
+sheets:
+- name: PT_Cons_Statewise
+  header_row: 8
+  label_column: A
+  alt_label_columns: []
+  first_data_row: 9
+  last_data_row: 55
+  first_value_column: B
+  last_value_column: S
+  note_rows:
+  - 1
+  - 5
+  - 6
+  - 7
+  - 56
+  - 57
+  row_kinds:
+    subtotal: ^Region\ Total$
+    grand_total: ^(ALL\ INDIA\ TOTAL)$
+    section_header: '^REGION\ \-\ '
+  section_dimension: region
+  constants:
+    product: ALL
+- name: PT_Cons_Statewise MS
+  header_row: 8
+  label_column: A
+  alt_label_columns: []
+  first_data_row: 9
+  last_data_row: 55
+  first_value_column: B
+  last_value_column: S
+  note_rows:
+  - 1
+  - 5
+  - 6
+  - 7
+  - 56
+  - 57
+  row_kinds:
+    subtotal: ^Region\ Total$
+    grand_total: ^(ALL\ INDIA\ TOTAL)$
+    section_header: '^REGION\ \-\ '
+  section_dimension: region
+  constants:
+    product: MS
+- name: PT_Cons_Statewise HSD
+  header_row: 8
+  label_column: A
+  alt_label_columns: []
+  first_data_row: 9
+  last_data_row: 55
+  first_value_column: B
+  last_value_column: S
+  note_rows:
+  - 1
+  - 5
+  - 6
+  - 7
+  - 56
+  - 57
+  row_kinds:
+    subtotal: ^Region\ Total$
+    grand_total: ^(ALL\ INDIA\ TOTAL)$
+    section_header: '^REGION\ \-\ '
+  section_dimension: region
+  constants:
+    product: HSD
+annotations:
+  state:
+    description: Indian state or union territory
+    aliases:
+    - state
+    - states
+    - ut
+    - union territory
+    - region name
+  region:
+    description: zone the state belongs to, from the sheet's section headers
+    aliases:
+    - region
+    - zone
+    - area
+  year:
+    description: Indian financial year, April to March, written like 2019-20
+    aliases:
+    - year
+    - financial year
+    - fy
+    - fiscal year
+    - period
+  product:
+    description: fuel type. ALL = all petroleum products; MS = Motor Spirit (petrol,
+      gasoline); HSD = High Speed Diesel (diesel)
+    aliases:
+    - product
+    - fuel
+    - fuel type
+    value_aliases:
+      petrol: MS
+      gasoline: MS
+      motor spirit: MS
+      diesel: HSD
+      hsd: HSD
+      high speed diesel: HSD
+      all products: ALL
+      all fuels: ALL
+      total consumption: ALL
+  value:
+    description: quantity consumed, in thousand metric tonnes. This is a VOLUME. The
+      file contains no prices, revenue or tax.
+    aliases:
+    - consumption
+    - volume
+    - quantity
+    - usage
+    - demand
+    - tonnes
+    - sales volume
+absent_concepts:
+- tax
+- taxes
+- revenue
+- price
+- prices
+- cost
+- margin
+- profit
+- population
+- gdp
+- vehicles
+- imports
+- exports
+- production
+- refinery
+defaults:
+  product: ALL
+confidence:
+  PT_Cons_Statewise.value_columns: high
+  PT_Cons_Statewise.data_rows: high
+  PT_Cons_Statewise.header_row: high
+  PT_Cons_Statewise.label_column: high
+  PT_Cons_Statewise MS.value_columns: high
+  PT_Cons_Statewise MS.data_rows: high
+  PT_Cons_Statewise MS.header_row: high
+  PT_Cons_Statewise MS.label_column: high
+  PT_Cons_Statewise HSD.value_columns: high
+  PT_Cons_Statewise HSD.data_rows: high
+  PT_Cons_Statewise HSD.header_row: high
+  PT_Cons_Statewise HSD.label_column: high
+notes_for_reviewer: []
