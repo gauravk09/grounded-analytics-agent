@@ -208,7 +208,8 @@ export function Onboard({ model, onDone, onCancel }: {
                             constants: Object.fromEntries(
                               text.split(',').map((x) => x.trim())
                                 .filter((x) => x.includes('='))
-                                .map((x) => [x.slice(0, x.indexOf('=')), x.slice(x.indexOf('=') + 1)])),
+                                .map((x) => [x.slice(0, x.indexOf('=')).trim(),
+                                             x.slice(x.indexOf('=') + 1).trim()])),
                           })
                         }}
                         className="w-full rounded border border-stone-300 px-2 py-1.5 font-mono text-xs" />
