@@ -69,6 +69,16 @@ def ask(question: str, catalog: Catalog, db_path: Path, planner,
                            clarification=" ".join(a.question() for a in amb)))
 
     plan = planner.plan(question, catalog, memory)
+    # The model guessed a categorical value we can't verify (product=HSD for "diesel") — ask which,
+    # rather than refuse. Picking one re-asks with the value spelled out, and the plan then passes
+    # (D98). This is the map/ask/abstain rule: when in doubt, ask the human the specific thing.
+    if getattr(plan, "kind", None) == "abstain" and \
+            getattr(plan, "reason_code", None) == "ambiguous_value":
+        col = plan.detail
+        labels = catalog.labels_for(col) or []
+        return done(Answer(question=question, status="clarify",
+                           clarification=f'Which {col} did you mean?',
+                           scope_options=labels[:6]), plan)
     if getattr(plan, "kind", None) == "abstain" and \
             getattr(plan, "reason_code", None) in ("unsupported_operation", "planner_failed"):
         esc = answer_via_sql(question, catalog, db_path, planner)

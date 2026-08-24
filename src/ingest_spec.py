@@ -252,6 +252,22 @@ def _write(db_path: Path, spec: Spec, dims: list[str], rows, receipts, notes,
     if bad:
         raise ValueError(f"column name(s) {bad} contain a double-quote and cannot be a safe "
                          f"SQL identifier")
+
+    # Double-count guard (D97). If two rows share the same grain — every dimension except the
+    # measure — there is nothing to tell them apart, so a later "sum by entity" silently adds them
+    # together. That happens when variant sheets (product MS / HSD / ALL) were ingested with no
+    # distinguishing constant. Refuse now with a concrete hint rather than answer a wrong number.
+    grain = [d for d in dims if d not in numeric]
+    if grain and rows:
+        from collections import Counter
+        dup = sum(1 for c in Counter(tuple(r.get(d) for d in grain) for r in rows).values() if c > 1)
+        if dup:
+            raise ValueError(
+                f"{dup} rows share the same ({', '.join(grain)}) with nothing to tell them apart — "
+                f"these sheets look like the same table repeated. On the confirm screen, set what "
+                f"distinguishes them (e.g. product=MS on one sheet, product=HSD on another), or the "
+                f"numbers would be double-counted.")
+
     cols = ", ".join(f'"{d}" {"DOUBLE" if d in numeric else "VARCHAR"}' for d in dims)
     for t in (spec.table, "cell_map", "sheet_notes"):
         con.execute(f"DROP TABLE IF EXISTS {t}")

@@ -63,6 +63,9 @@ REASONS = Literal[
     "empty_result",          # a valid query that matched nothing
     "unsupported_operation", # the data supports it; this system cannot express it (ratios, growth)
     "planner_failed",        # a fine question; no planner could build a reliable plan for it
+    "ambiguous_value",       # the model guessed a categorical value we can't verify — ask which.
+                             # detail is the column to ask about (e.g. "product"). Not a refusal:
+                             # ask.py turns it into a clarify with that column's labels as options.
 ]
 
 
