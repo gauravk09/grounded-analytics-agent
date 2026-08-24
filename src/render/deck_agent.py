@@ -318,10 +318,11 @@ def story(findings: list[Answer], goal: str = "", planner=None) -> dict:
 
 
 def story_deck(catalog: Catalog, db_path: Path, planner, path: Path,
-               goal: str = "", memory=None) -> tuple[Path, list]:
+               goal: str = "", memory=None) -> tuple[Path, list, dict]:
     """Author a deck FROM THE SHEET: mine cited findings, let the agent arrange them into a story,
-    render. The numbers come from the sheet; the narrative comes from the model. Returns (path,
-    ordered findings)."""
+    render. The numbers come from the sheet; the narrative comes from the model. Returns
+    (path, ordered findings, story plan) — the plan carries title/subtitle/closing so the same
+    content can be shown in-window, not only downloaded."""
     findings = survey(catalog, db_path)
 
     # A BRIEF turns the agent into a question-writer: it proposes questions shaped by the brief,
@@ -341,7 +342,7 @@ def story_deck(catalog: Catalog, db_path: Path, planner, path: Path,
     ordered = [findings[i] for i in plan["order"]]
     out = build_deck(ordered, path, title=plan["title"], subtitle=plan["subtitle"],
                      closing=plan.get("closing", ""))
-    return out, ordered
+    return out, ordered, plan
 
 
 if __name__ == "__main__":
@@ -352,9 +353,9 @@ if __name__ == "__main__":
     spec = Spec.load(root / "specs" / "BananaPatterns-Climbing-2026-08-18.yaml")
     db = root / "data" / "BananaPatterns-Climbing-2026-08-18.duckdb"
     cat = build(db, spec.table, spec=spec)
-    out, answers = story_deck(cat, db, get_planner(),
-                              root / "output" / "story_deck.pptx",
-                              goal="which stocks are breaking out most strongly")
+    out, answers, _ = story_deck(cat, db, get_planner(),
+                                 root / "output" / "story_deck.pptx",
+                                 goal="which stocks are breaking out most strongly")
     print(f"wrote {out}")
     for a in answers:
         print(f"  [{a.status}] {a.question} -> {a.text()[:70]}")

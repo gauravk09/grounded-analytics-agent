@@ -319,8 +319,10 @@ def sheet_cells(sheet: str, workbook: str | None = None, file: str | None = None
 @app.post("/api/deck")
 def make_deck(req: DeckIn):
     """Author a presentation FROM the workbook: mine cited findings, let the agent arrange them
-    into a story, render a .pptx. Every number on every slide traces to a source cell; the browser
-    only downloads the file, it never sees a raw figure (same contract as /api/ask)."""
+    into a story, render a .pptx AND return the slides as JSON so the client can show the deck
+    in-window (each slide's number stays welded to its source cells). The .pptx is served
+    separately by GET /api/deck/{workbook}/file for download — same contract as /api/ask: the
+    client never sees a raw figure, only finished text and its evidence."""
     _, db = resolve(req.workbook)
     out = ROOT / "output" / f"{req.workbook}_story.pptx"
     # The deck needs no planner: findings are mined deterministically (cited), and the narrative
@@ -330,9 +332,24 @@ def make_deck(req: DeckIn):
         pl = planner_from(req)
     except HTTPException:
         pl = None
-    story_deck(catalog(req.workbook), db, pl, out, goal=req.goal)
+    _, ordered, plan = story_deck(catalog(req.workbook), db, pl, out, goal=req.goal)
+    slides = [{"text": f.text(),
+               "cells": [{"sheet": c.sheet, "a1": c.a1} for c in f.all_citations()]}
+              for f in ordered]
+    return {"title": plan["title"], "subtitle": plan["subtitle"],
+            "closing": plan.get("closing", ""), "slides": slides,
+            "pptx": f"/api/deck/{req.workbook}/file"}
+
+
+@app.get("/api/deck/{workbook}/file")
+def deck_file(workbook: str):
+    """Download the .pptx built by the most recent POST /api/deck for this workbook."""
+    resolve(workbook)                                 # 404s on an unknown workbook
+    out = ROOT / "output" / f"{Path(workbook).name}_story.pptx"
+    if not out.exists():
+        raise HTTPException(404, "no deck built yet — generate it first")
     return FileResponse(
-        out, filename=f"{req.workbook}.pptx",
+        out, filename=f"{workbook}.pptx",
         media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation")
 
 

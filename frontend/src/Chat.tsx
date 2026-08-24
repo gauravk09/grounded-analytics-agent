@@ -9,9 +9,10 @@
  *   abstained  blue    — a composed sentence, not an error
  */
 import { useState } from 'react'
-import { api, type Answer, type ModelChoice, type Workbook } from './api'
+import { api, type Answer, type Deck, type ModelChoice, type Workbook } from './api'
 import { Trace } from './Trace'
 import { SheetViewer } from './SheetViewer'
+import { DeckViewer } from './DeckViewer'
 
 export type Turn = { question: string; answer: Answer }
 
@@ -45,6 +46,7 @@ export function Chat({ workbook, workbooks, model, session, turns, setTurns, sug
   const [deckBusy, setDeckBusy] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
   const [viewer, setViewer] = useState<{ sheet: string; a1: string } | null>(null)
+  const [deck, setDeck] = useState<Deck | null>(null)
 
   async function send(question: string) {
     if (!question.trim() || busy) return
@@ -62,8 +64,8 @@ export function Chat({ workbook, workbooks, model, session, turns, setTurns, sug
     setDeckBusy(true); setNotice('Building your presentation… every number stays traced to its cell.')
     setError(null); setQ('')
     try {
-      await api.deck(workbook.id, brief, model)
-      setNotice('✓ Presentation ready — check your downloads.')
+      const d = await api.deck(workbook.id, brief, model)
+      setDeck(d); setNotice(null)
     } catch (e) { setNotice(null); setError((e as Error).message) }
     finally { setDeckBusy(false) }
   }
@@ -203,6 +205,9 @@ export function Chat({ workbook, workbooks, model, session, turns, setTurns, sug
       {viewer && (
         <SheetViewer source={{ workbook: workbook.id }} sheet={viewer.sheet} a1={viewer.a1}
           onClose={() => setViewer(null)} />
+      )}
+      {deck && (
+        <DeckViewer deck={deck} workbook={workbook.id} onClose={() => setDeck(null)} />
       )}
     </div>
   )
