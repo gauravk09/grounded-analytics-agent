@@ -72,6 +72,11 @@ export function Sources({ workbooks, current, onPick, onDelete, onAdd, busy }: {
           <span className="text-base leading-none">+</span> Add a spreadsheet
         </button>
       </div>
+
+      <div className="border-t border-black/5 px-4 py-3 text-center text-[11px] leading-relaxed text-stone-400">
+        Made with <span className="text-red-400">❤</span> by Gaurav Kumar
+        <span className="mt-0.5 block text-stone-300">© 2026 Grounded Analytics Agent</span>
+      </div>
     </aside>
   )
 }
