@@ -2651,3 +2651,32 @@ instead of p(miss).
 **Verified:** the demo question ran **15/15 answered, 0 abstained** on the uploaded spec; a genuine
 refusal ("How much tax…") still abstains in ~1s (one attempt, right reason), not after three
 retries; gate suite 69+8 still passes.
+
+## D96 — Confirm normalizes free-text constants and derives a missing default
+
+**AGREED, then LOCKED (pre-demo).** Upload → "Which state was highest in 2024-25?" abstained with
+"I could not build a reliable query" — a real bug wearing a graceful refusal's clothes. Two causes,
+both from the free-text confirm screen:
+
+1. A product typed as `product = ALL` was stored as a constant keyed `"product "` (trailing space)
+   with value `" All"` — because the field parser split on `=` without trimming either side. The
+   ingest then made a column `"product "` that nothing matched.
+2. The confirm screen sets per-sheet product constants but never a **default**. With three sheets
+   (ALL/MS/HSD) and no default, a question that doesn't name the product forces the model to add a
+   `product=ALL` filter, which the overfilter gate rejects as *invented* (D-overfilter) — so it
+   looked unanswerable when the data was fine.
+
+Fixed at the **backend confirm seam** (mechanically, not by trusting the client): trim every
+constant key/value, and derive `defaults[key]` = the `all`-like variant when a constant dimension
+has more than one value. The frontend parser also trims now, but the backend is the guarantee —
+"a user can type anything", so normalize where it can't be gotten wrong (D9).
+
+**On the abstain message:** it read *"a limit of the planner, not of the file — try rephrasing"*,
+which dressed a bug as a graceful, expected refusal. The right fix was to make the case answer, not
+to word the refusal more nicely.
+
+**Rejected: a "default product" field on the confirm screen.** More UI, and it still relies on the
+user filling it right. Deriving it from the constants they already set is invisible and correct.
+
+**Verified:** through the live backend `/api/ask`, the question answers **6/6** on a freshly
+"confirmed" upload (was 0/6); a genuine refusal ("How much tax…") still abstains. Gate suite passes.

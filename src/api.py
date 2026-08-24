@@ -265,6 +265,24 @@ def confirm(req: ConfirmIn):
         # A rejected spec (e.g. an unsafe table name) is the client's fault, not a server crash —
         # return 400 with the reason, never a 500 stack trace that could leak internals.
         raise HTTPException(400, f"invalid spec: {e.errors()[0]['msg']}")
+
+    # Normalize sheet constants and derive a default for a multi-sheet constant dimension (D96).
+    # Two bugs hid here: (1) a constant typed as "product = ALL" arrived with stray spaces, so the
+    # column became "product " and never matched; (2) with no default, a question that doesn't name
+    # the product forces the model to add a `product=ALL` filter, which the overfilter gate then
+    # rejects as "invented" — the file looked unanswerable when it wasn't. Trimming and defaulting
+    # to the 'all'-like variant fixes both mechanically, so it can't depend on the client getting
+    # spacing or a hidden field right.
+    values_by_key: dict[str, set] = {}
+    for sh in spec.sheets:
+        sh.constants = {k.strip(): v.strip() for k, v in sh.constants.items()}
+        for k, v in sh.constants.items():
+            values_by_key.setdefault(k, set()).add(v)
+    for k, vals in values_by_key.items():
+        allish = [v for v in vals if v.lower() in ("all", "all products", "total")]
+        if k not in spec.defaults and len(vals) > 1 and allish:
+            spec.defaults[k] = allish[0]
+
     path = DATA / Path(spec.file).name
     if not path.exists():
         raise HTTPException(404, f"no file {spec.file!r}")
