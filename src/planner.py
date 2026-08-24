@@ -137,6 +137,7 @@ class CascadePlanner:
 
     def plan(self, question: str, catalog: Catalog, memory=None) -> Plan:
         last = None
+        clarify_col = None
         # The model is stochastic even at temperature 0, so a plan that trips a gate on one draw
         # often passes on the next. Retry the whole cascade a few times before abstaining, so a
         # one-off miss never surfaces as "I can't answer" — only a consistent failure abstains.
@@ -151,10 +152,21 @@ class CascadePlanner:
                     continue
                 from verify import overfilter_gaps
                 prev = memory.previous if memory else None
-                gaps = coverage_gaps(question, plan, catalog, prev) + \
-                    [f"invented {g}" for g in overfilter_gaps(question, plan, catalog, prev)]
+                cov = coverage_gaps(question, plan, catalog, prev)
+                over = overfilter_gaps(question, plan, catalog, prev)
+                gaps = cov + [f"invented {g}" for g in over]
                 if gaps:
                     last = PlanFailure(f"{type(tier).__name__} ignored: {', '.join(gaps)}")
+                    # An invented filter on a categorical column with a small label set is a value
+                    # the model GUESSED (product=HSD for "diesel"), not a harmful hidden narrowing.
+                    # When that's the only problem, we ask the user which value rather than refuse —
+                    # the map/ask/abstain rule (D98). A dropped filter (coverage) is a different
+                    # failure, so it clears the flag.
+                    if over and not cov:
+                        c = over[0].split("=", 1)[0]
+                        clarify_col = c if catalog.labels_for(c) else None
+                    elif cov:
+                        clarify_col = None
                 else:
                     # "A good plan" means "a plan that compiles". Compiling here is what turns a
                     # whitelist or slot-contract violation into an escalation instead of a crash.
@@ -172,6 +184,10 @@ class CascadePlanner:
                         last = e
                 if os.environ.get("PLANNER_TRACE"):
                     print(f"      [try {attempt + 1}] escalating past {type(tier).__name__}: {last}")
+        # The model kept guessing a categorical value we can't verify (e.g. product=HSD for
+        # "diesel"). Don't refuse — ask which. ask.py turns this into a clarify (D98).
+        if clarify_col:
+            return Abstain(kind="abstain", reason_code="ambiguous_value", detail=clarify_col)
         # Not "not a data question" — that blames the file for our planner giving up (D49).
         return Abstain(kind="abstain", reason_code="planner_failed", detail=str(last)[:160])
 

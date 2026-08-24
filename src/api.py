@@ -286,9 +286,14 @@ def confirm(req: ConfirmIn):
     path = DATA / Path(spec.file).name
     if not path.exists():
         raise HTTPException(404, f"no file {spec.file!r}")
+    # Ingest FIRST — it can refuse an ambiguous spec (the double-count guard, D97). Only save the
+    # spec once the data actually ingested, so a rejected confirm leaves no half-created workbook.
+    try:
+        counts = ingest(spec, path, DATA / f"{Path(spec.file).stem}.duckdb")
+    except ValueError as e:
+        raise HTTPException(400, str(e))
     out = SPECS / f"{Path(spec.file).stem}.yaml"
     spec.save(out)
-    counts = ingest(spec, path, DATA / f"{Path(spec.file).stem}.duckdb")
     catalog_for.cache_clear()
     return {"workbook": out.stem, "counts": counts}
 

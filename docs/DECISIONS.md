@@ -2680,3 +2680,37 @@ user filling it right. Deriving it from the constants they already set is invisi
 
 **Verified:** through the live backend `/api/ask`, the question answers **6/6** on a freshly
 "confirmed" upload (was 0/6); a genuine refusal ("How much tax…") still abstains. Gate suite passes.
+
+## D97 — Ingest refuses a spec that would double-count
+
+**AGREED, then LOCKED (pre-demo).** If the confirm screen's per-sheet distinguisher (product) is
+left blank, the variant sheets (ALL/MS/HSD) merge with nothing to tell them apart, so a later "sum
+by state" silently adds all three together — a confident wrong number, the exact failure the project
+exists to prevent. `_write` now computes the table's **grain** (every dimension except the measure)
+and refuses at ingest if two rows share a grain, with a concrete hint ("set what distinguishes them,
+e.g. product=MS on one sheet, product=HSD on another"). `confirm()` ingests before saving the spec,
+so a rejected confirm leaves no half-created workbook, and surfaces the `ValueError` as a 400.
+Verified: committed specs and all eval-corpus shapes still ingest; a blank-product ppac is refused.
+
+## D98 — A guessed categorical value asks, it doesn't refuse
+
+**AGREED, then LOCKED (pre-demo).** "Which state consumed the most diesel?" abstained with "could not
+build a reliable query". The model built the *correct* plan (`product=HSD`), but the overfilter gate
+flagged `product=HSD` as invented because the auto-proposed spec has no alias mapping "diesel"→HSD,
+so it can't see the question justifies the filter. Refusing a right answer is the wrong move — the
+project's own rule is **map / ask / abstain**, not guess-or-refuse.
+
+Now, when a plan's *only* problem is an invented filter on a categorical column with a small label
+set, the cascade returns `reason_code="ambiguous_value"` (detail = the column), and `ask.py` turns
+it into a **clarify**: "Which product did you mean?" with the column's labels as buttons. Picking one
+re-asks with the value spelled out, and the plan passes. A dropped filter (coverage gap) is a
+different failure and still abstains; a genuine planner miss still abstains.
+
+**Rejected: auto-generating value aliases (diesel→HSD) at propose time.** That needs domain knowledge
+the proposer doesn't have, and would be a silent guess. Asking the user is honest and, once answered,
+exact.
+
+**Verified (live /api/ask):** the fuel question returns a clarify with options [All, HSD, MS];
+picking HSD (and the spelled-out form) answers "UTTAR PRADESH … the most diesel … 10,636"; "which
+state was highest" still answers directly (default ALL); "how much tax" still abstains. Gate suite
+69+8, corpus 8, record-QA 4 all pass.
