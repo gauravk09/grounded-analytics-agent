@@ -205,8 +205,6 @@ Measured gap: 241,612 − 223,480 = **18,132** in FY2025-26.
 | Item | Status |
 |---|---|
 | **Spec refactor** — pull ingest constants into `specs/ppac.yaml` (D16) | Parked, ~1 hour. Converts the generality answer from a claim to a demo |
-| **coreworks.ai signup**, ~15 min | ⏸️ **Gaurav's** — blocks the README impressions paragraph |
-| Confirm the real deadline | The brief says "Monday, 1st June" — check with them |
 | Telangana bifurcation (2014) | A real data trap. Candidate for "what I'd do with another week" |
 | `VLOOKUP` to an external workbook (`[1]POL!`) | FY2025-26 values come from a file we don't have. Honest answer: say so. Good lineage story |
 | Scaling the receipt book | Currently ~5 receipt rows per data row. At a million rows, store the rule not the rows. Likely interview question |
@@ -241,7 +239,7 @@ The list above is the original journey; this is the state now, for a reviewer de
 
 ### Test status (run before ship)
 `tests/eval_gates.py` **69/69** · `tests/eval_ingest.py` **3/3** · `tests/eval_corpus.py` **8/8** ·
-`tests/eval_record_qa.py` **4/4** · `tests/eval_e2e.py` **~14–15/15** (one flaky, see below) · `tsc` clean.
+`tests/eval_record_qa.py` **4/4** · `tests/eval_e2e.py` **14/15** (planner retry landed, D95) · `tsc` clean.
 
 ### Known issues & limits (honest, before ship)
 | # | Issue | Severity | Note |
@@ -249,15 +247,14 @@ The list above is the original journey; this is the state now, for a reviewer de
 | 1 | **Escape hatch needs a capable model** | expected | No DeepSeek key / weak local model → deep questions abstain (never wrong). Browser needs the key entered. |
 | 2 | **Rank/max lineage over-approximates** | low | Cites all rows the query scanned, not just the winner — a safe superset, never a miss. |
 | 3 | **SQL→DAG: single base table only** | medium | Cross-table joins need the × rule; window functions → DAG opaque → the hatch abstains. |
-| 4 | **Planner non-determinism** | medium | DeepSeek occasionally mis-plans (Bihar share → group-by-state). No retry / self-consistency yet. Causes the 1 flaky e2e. |
+| 4 | **Planner non-determinism** | low | DeepSeek can mis-plan on a single draw; the cascade now retries before abstaining (D95), so a one-off miss re-draws instead of surfacing as a refusal. |
 | 5 | **SQL path is scalar-only** | medium | "List the top 5 …" via the escape hatch is deferred; typed path still handles the common list/rank. |
 | 6 | **Budget stacked headers not split** | low | Combined into unique periods (usable); not split into year × estimate-type dimensions. |
 | 7 | **Onboarding label quirk** | cosmetic | A record file's geometry line reads "names in column E" (E is the last identifier, not the entity). |
 | 8 | ~~Legacy Streamlit~~ **removed** | done | `streamlit_app.py`/`confirm_app.py` deleted, servers killed, deps/docs cleaned (D86). |
-| 9 | **Delete removes source data** | by-design | Inline-confirmed (D76), but it deleted a demo file during testing (restored). Consider soft-delete. |
-| 10 | **Guarded env-key hook** | note | `ALLOW_ENV_KEY=1` opt-in fallback added for local testing; **off by default** (D40 holds). Remove if unwanted. |
-| 11 | **README impressions paragraph** | todo | Still owed — needs the coreworks.ai signup. |
-| 12 | **e2e costs API + is slow** | note | 15 DeepSeek calls (~$0.0015, ~2 min). Fine for CI-on-demand, not per-commit. |
+| 9 | **Delete removes source data** | by-design | Inline-confirmed (D76). Consider soft-delete for a product. |
+| 10 | **Guarded env-key hook** | note | `ALLOW_ENV_KEY=1` opt-in fallback for local testing; **off by default** (D40 holds). |
+| 11 | **e2e costs API + is slow** | note | 15 DeepSeek calls (~$0.0015, ~2 min). Fine for CI-on-demand, not per-commit. |
 
 ### The research arc (D79–D83), parked as prototypes — not shipped
 `prototypes/` holds the A-vs-B tradeoff, the lineage stress test, the shared-node DAG, and the
