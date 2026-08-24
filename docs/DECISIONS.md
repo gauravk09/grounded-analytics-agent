@@ -2629,3 +2629,25 @@ surfaced the 18x cost cut (README §4.8), which a framework abstraction would ha
 workbooks, chains questions, searches across documents, and needs checkpoints or a human in the
 loop, then LangGraph's state model would be worth its weight. That is a different product from
 structured-data QA with a hard traceability guarantee. Recorded in README §4.9.
+
+## D95 — The planner retries a stochastic miss before abstaining
+
+**AGREED, then LOCKED (pre-demo).** A user hit "I can't answer this from the file — I could not
+build a reliable query" on a question the data plainly supports ("Which state was highest in
+2024-25?"). The CLI answered it 5/5; the failure was a one-off. Cause: the model is stochastic even
+at `temperature=0`, so it occasionally emits a plan that trips a gate (coverage / compile), and with
+a single configured tier the cascade had nothing to escalate to — it abstained on the first miss.
+
+Fixed in `CascadePlanner.plan`: wrap the tier loop in a bounded retry (`ATTEMPTS = 3`). A stochastic
+miss now re-draws instead of surfacing as a refusal; only a *consistent* failure across all attempts
+abstains. A legitimate `Abstain` (the model deciding the data can't answer, e.g. "no tax column")
+still returns immediately via the in-loop `return`, so retries are never spent on a real refusal and
+add no cost or latency on the happy path — they fire only when the run would otherwise have failed.
+
+**Rejected: prompt-tuning the planner to be "more careful."** That is the "ask the model nicely"
+anti-pattern (D9) — it cannot make a stochastic process reliable. A retry is mechanical: p(miss)³
+instead of p(miss).
+
+**Verified:** the demo question ran **15/15 answered, 0 abstained** on the uploaded spec; a genuine
+refusal ("How much tax…") still abstains in ~1s (one attempt, right reason), not after three
+retries; gate suite 69+8 still passes.

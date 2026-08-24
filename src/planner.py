@@ -133,37 +133,45 @@ class CascadePlanner:
     def __init__(self, tiers: list):
         self.tiers = tiers
 
+    ATTEMPTS = 3
+
     def plan(self, question: str, catalog: Catalog, memory=None) -> Plan:
         last = None
-        for tier in self.tiers:
-            try:
-                plan = tier.plan(question, catalog, memory)
-            except PlanFailure as e:
-                last = e
-                continue
-            from verify import overfilter_gaps
-            prev = memory.previous if memory else None
-            gaps = coverage_gaps(question, plan, catalog, prev) + \
-                [f"invented {g}" for g in overfilter_gaps(question, plan, catalog, prev)]
-            if gaps:
-                last = PlanFailure(f"{type(tier).__name__} ignored: {', '.join(gaps)}")
-            else:
-                # "A good plan" means "a plan that compiles". Compiling here is what turns a
-                # whitelist or slot-contract violation into an escalation instead of a crash.
+        # The model is stochastic even at temperature 0, so a plan that trips a gate on one draw
+        # often passes on the next. Retry the whole cascade a few times before abstaining, so a
+        # one-off miss never surfaces as "I can't answer" — only a consistent failure abstains.
+        # A legitimate Abstain (the model deciding the data can't answer) still returns immediately
+        # via the `return plan` below, so this never spends retries on a real refusal.
+        for attempt in range(self.ATTEMPTS):
+            for tier in self.tiers:
                 try:
-                    if plan.kind == "query":
-                        from compile import compile_plan
-                        compile_plan(plan, catalog)
-                    elif plan.kind == "derived":
-                        from compile import check_derived, compile_measure
-                        check_derived(plan, catalog)
-                        for m in plan.measures:
-                            compile_measure(m, catalog)
-                    return plan
+                    plan = tier.plan(question, catalog, memory)
                 except PlanFailure as e:
                     last = e
-            if os.environ.get("PLANNER_TRACE"):
-                print(f"      escalating past {type(tier).__name__}: {last}")
+                    continue
+                from verify import overfilter_gaps
+                prev = memory.previous if memory else None
+                gaps = coverage_gaps(question, plan, catalog, prev) + \
+                    [f"invented {g}" for g in overfilter_gaps(question, plan, catalog, prev)]
+                if gaps:
+                    last = PlanFailure(f"{type(tier).__name__} ignored: {', '.join(gaps)}")
+                else:
+                    # "A good plan" means "a plan that compiles". Compiling here is what turns a
+                    # whitelist or slot-contract violation into an escalation instead of a crash.
+                    try:
+                        if plan.kind == "query":
+                            from compile import compile_plan
+                            compile_plan(plan, catalog)
+                        elif plan.kind == "derived":
+                            from compile import check_derived, compile_measure
+                            check_derived(plan, catalog)
+                            for m in plan.measures:
+                                compile_measure(m, catalog)
+                        return plan
+                    except PlanFailure as e:
+                        last = e
+                if os.environ.get("PLANNER_TRACE"):
+                    print(f"      [try {attempt + 1}] escalating past {type(tier).__name__}: {last}")
         # Not "not a data question" — that blames the file for our planner giving up (D49).
         return Abstain(kind="abstain", reason_code="planner_failed", detail=str(last)[:160])
 
