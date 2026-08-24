@@ -90,9 +90,3 @@ tests/
 - Nothing temporary in the project root.
 - Python via `./.venv/bin/python` — there is no global openpyxl/duckdb.
 - Scratch work goes in the session scratchpad, not here.
-
-## Things I have to do myself
-
-- Sign up at coreworks.ai and spend ~15 min (needed for the README impressions paragraph)
-
-Remind me once if the README is being written and it still isn't done. Otherwise don't nag.

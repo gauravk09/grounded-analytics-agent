@@ -476,7 +476,7 @@ Honest, with a rough severity for each. The full table is in
 | the hard-question path needs a strong model | expected | with no key, or a weak local model, hard questions refuse. They never answer wrong. The browser needs a key entered. |
 | rank/max lineage over-shows | low | it cites every row the query scanned, not just the winner. A safe superset, never a miss. |
 | the SQL graph models a single base table | medium | cross-table joins would need the semiring join rule, and window functions become opaque and refuse |
-| planner non-determinism | medium | a strong model sometimes mis-plans a share as a group-by (`v1='BIHAR'`). No retry or self-consistency yet, which is the one flaky e2e case. |
+| planner non-determinism | low | a model can mis-plan on a single draw; the cascade retries before abstaining (D95), so a one-off miss re-draws instead of surfacing as a refusal. |
 | the SQL path is scalar-only | medium | "list the top 5" through SQL is deferred. The typed path still handles the common lists and ranks. |
 | stacked headers get combined, not split | low | the Union Budget's year-by-estimate-type header is merged into one unique period (usable), not split into two dimensions |
 | an onboarding label quirk | cosmetic | a record file's geometry line reads "names in column E", where E is the last identifier rather than the entity |
