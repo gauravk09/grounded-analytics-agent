@@ -49,6 +49,8 @@ export type Detail = {
 
 export type SheetCell = { a1: string; r: number; c: number; v: string; f: string | null }
 export type Sheet = { sheet: string; max_row: number; max_col: number; cells: SheetCell[] }
+export type DeckSlide = { text: string; cells: { sheet: string; a1: string }[] }
+export type Deck = { title: string; subtitle: string; closing: string; slides: DeckSlide[]; pptx: string }
 
 export type Workbook = {
   id: string
@@ -143,21 +145,16 @@ export const api = {
     return call<Sheet>(`/api/sheet?${q.toString()}`)
   },
 
-  // Returns a .pptx binary, not JSON — fetch as a blob and hand the browser a download. The story
-  // is authored server-side; the client only receives the finished file (same contract as ask()).
-  deck: async (workbook: string, goal: string, m: ModelChoice) => {
+  // Returns the deck as JSON so the client can show it in-window (each slide's number stays welded
+  // to its cells). The .pptx is built server-side too and downloaded on demand via `deck.pptx`.
+  deck: async (workbook: string, goal: string, m: ModelChoice): Promise<Deck> => {
     const r = await fetch('/api/deck', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ workbook, goal, ...m }),
     })
     if (!r.ok) throw new Error((await r.json().catch(() => null))?.detail ?? 'deck failed')
-    const url = URL.createObjectURL(await r.blob())
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${workbook}.pptx`
-    a.click()
-    URL.revokeObjectURL(url)
+    return r.json()
   },
 
   remove: async (id: string) => {
