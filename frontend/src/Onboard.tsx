@@ -9,11 +9,18 @@
  * columns — is worked out by counting and merely SHOWN, because you can check it by looking.
  * Meaning cannot be checked by looking and cannot be derived at all, so it is asked.
  */
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { api, type ModelChoice, type Proposal, type SheetSpec, type Spec } from './api'
 import { SheetViewer } from './SheetViewer'
 
 type Phase = 'pick' | 'reading' | 'confirm' | 'ingesting' | 'done'
+
+// Defined at module scope, NOT inside Onboard. A component declared inside the render function is a
+// new type on every render, so React remounts its whole subtree each keystroke — which dropped focus
+// after a single character in every confirm-screen field.
+const Card = ({ children }: { children: ReactNode }) => (
+  <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">{children}</div>
+)
 
 export function Onboard({ model, onDone, onCancel }: {
   model: ModelChoice
@@ -30,6 +37,10 @@ export function Onboard({ model, onDone, onCancel }: {
   const [showGrid, setShowGrid] = useState<string | null>(null)
   const picker = useRef<HTMLInputElement>(null)
   const [viewer, setViewer] = useState<{ sheet: string; a1: string } | null>(null)
+  // Raw text for the per-sheet constants field, kept separate from the parsed constants. The input
+  // must show exactly what you typed — deriving its value by re-serialising the parsed constants
+  // blanked every keystroke before an "=" (you could never type "product=ALL").
+  const [constText, setConstText] = useState<Record<string, string>>({})
 
   useEffect(() => { api.files().then((f) => { setFiles(f); setFile(f[0] ?? '') }) }, [])
 
@@ -66,10 +77,6 @@ export function Onboard({ model, onDone, onCancel }: {
 
   const grouped = spec?.sheets.filter((s) => 'section_header' in (s.row_kinds ?? {})) ?? []
   const unsure = Object.entries(spec?.confidence ?? {}).filter(([, v]) => v !== 'high')
-
-  const Card = ({ children }: { children: React.ReactNode }) => (
-    <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">{children}</div>
-  )
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-4 py-6">
@@ -192,13 +199,18 @@ export function Onboard({ model, onDone, onCancel }: {
                     <label key={sh.name} className="text-sm">
                       <div className="mb-1 truncate text-stone-500" title={sh.name}>{sh.name}</div>
                       <input placeholder="e.g. product=MS"
-                        value={Object.entries(sh.constants).map(([k, v]) => `${k}=${v}`).join(', ')}
-                        onChange={(e) => patch(sh.name, {
-                          constants: Object.fromEntries(
-                            e.target.value.split(',').map((x) => x.trim())
-                              .filter((x) => x.includes('='))
-                              .map((x) => [x.slice(0, x.indexOf('=')), x.slice(x.indexOf('=') + 1)])),
-                        })}
+                        value={constText[sh.name] ??
+                          Object.entries(sh.constants).map(([k, v]) => `${k}=${v}`).join(', ')}
+                        onChange={(e) => {
+                          const text = e.target.value
+                          setConstText((m) => ({ ...m, [sh.name]: text }))
+                          patch(sh.name, {
+                            constants: Object.fromEntries(
+                              text.split(',').map((x) => x.trim())
+                                .filter((x) => x.includes('='))
+                                .map((x) => [x.slice(0, x.indexOf('=')), x.slice(x.indexOf('=') + 1)])),
+                          })
+                        }}
                         className="w-full rounded border border-stone-300 px-2 py-1.5 font-mono text-xs" />
                     </label>
                   ))}
