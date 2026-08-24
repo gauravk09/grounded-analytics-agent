@@ -1,11 +1,11 @@
-# Project instructions — Coreworks take-home
+# Project instructions — Grounded Analytics Agent
 
 Extends the global `~/.claude/CLAUDE.md`. Where they conflict, this file wins.
 
 ## This is a teaching exercise, not a delivery
 
 The goal is that I can defend every decision in an interview room, **not** that code appears fast.
-Coreworks will ask "where did this number come from?", "what happens if I ask X?", "why this
+A reviewer will ask "where did this number come from?", "what happens if I ask X?", "why this
 approach over Y?" — I need to answer those myself, in my own words.
 
 If a choice between "faster" and "I understand it" comes up, pick understanding.

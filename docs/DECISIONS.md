@@ -1,6 +1,6 @@
 # DECISIONS
 
-Finalised decisions only. Each one is something Coreworks may ask "why this over Y?" about.
+Finalised decisions only. Each one is something a reviewer may ask "why this over Y?" about.
 The reasoning trail, rejected options and open questions live in [ROADMAP.md](ROADMAP.md).
 
 Status key: **LOCKED** = decided and built · **AGREED** = decided, not yet built · **PARKED** = deferred on purpose
