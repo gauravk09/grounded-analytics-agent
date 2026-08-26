@@ -112,6 +112,27 @@ copy `.env.example` to `.env`.
 
 ## 3. Architecture
 
+### How a question flows
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> plan: question
+    plan --> run: valid plan
+    plan --> ask: unsure which value
+    plan --> abstain: no reliable plan
+    run --> verify: checked SQL over the file
+    verify --> [*]: grounded
+    ask --> plan: you pick
+    abstain --> [*]
+```
+
+`plan` is the **only** place a model runs — it fills in a validated plan (a query or a refusal),
+never a number. `run` is deterministic SQL over the file; `verify` checks every number traces back to
+its source cells. Unlike a tool-calling agent loop, the model is **not** looped with tools — it
+writes one plan and hands off. The only path back to it is *you*: when it can't be sure which value
+you meant, it **asks** instead of guessing, and abstains rather than inventing.
+
 ### The shape of it
 
 ```
