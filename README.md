@@ -29,6 +29,15 @@ explains how those three live together behind one contract.
 `.csv`, whether it's a messy government cross-tab or a tidy table of records, and carries nothing
 over from one file to the next. See sections 4.2 and 4.3, and the example files in section 11.)
 
+## Demo
+
+A full walkthrough — upload a spreadsheet, let it work out the layout, ask questions in plain
+English, click any number to open its source cell, and generate a traceable deck:
+
+<video src="https://github.com/gauravk09/grounded-analytics-agent/releases/download/v0.1.0/grounded-analytics-demo.mp4" controls width="100%"></video>
+
+▶️ **[Watch the demo](https://github.com/gauravk09/grounded-analytics-agent/releases/download/v0.1.0/grounded-analytics-demo.mp4)** (if the player above doesn't load in your viewer).
+
 ---
 
 ## Contents
